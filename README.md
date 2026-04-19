@@ -37,13 +37,46 @@ A pixel-art coffee cup that drains as time runs out. Turns hot pink and pulses o
 
 ## 📦 Install
 
+```bash
+curl -fsSL https://github.com/retr0h/grind/raw/main/install.sh | sh
+```
+
+Installs to `~/.local/bin` (or `/usr/local/bin` as root) — SHA256 checksums verified. Override with `GRIND_INSTALL_DIR=/some/path` or pin a version with `GRIND_VERSION=1.1.1`.
+
+<details>
+<summary>Manual install</summary>
+
+### ⬇️ Download binary (macOS)
+
+Grab the latest release for your architecture:
+
+```bash
+# Apple Silicon (M1/M2/M3/M4)
+curl -sL https://github.com/retr0h/grind/releases/latest/download/grind_$(curl -sL https://api.github.com/repos/retr0h/grind/releases/latest | grep tag_name | cut -d '"' -f4 | tr -d v)_darwin_arm64 -o grind
+
+# Intel Mac
+curl -sL https://github.com/retr0h/grind/releases/latest/download/grind_$(curl -sL https://api.github.com/repos/retr0h/grind/releases/latest | grep tag_name | cut -d '"' -f4 | tr -d v)_darwin_amd64 -o grind
+
+chmod +x grind
+mv grind ~/.local/bin/
+```
+
+### 🔏 Verify checksum
+
+```bash
+curl -sL https://github.com/retr0h/grind/releases/latest/download/checksums.txt -o checksums.txt
+grep "$(uname -s | tr A-Z a-z)_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')" checksums.txt | sed 's/grind_.*$/grind/' | shasum -a 256 -c
+```
+
+</details>
+
 ### 🔨 Build from source
 
 ```bash
 git clone https://github.com/retr0h/grind.git
 cd grind
 go build -o grind .
-sudo mv grind /usr/local/bin/
+install -m 755 grind ~/.local/bin/grind
 ```
 
 ## 🚀 Usage
@@ -92,6 +125,9 @@ Then `<prefix> I` inside tmux to install. That's the entire setup.
 #### Configurable options
 
 ```tmux
+set -g @grind-binary      '/custom/path/to/grind'  # override binary location
+                                                   # (default: ~/.local/bin/grind,
+                                                   # falls back to $PATH lookup)
 set -g @grind-launch-key  'g'   # <prefix> + this key starts a timer (default: g)
 set -g @grind-stop-key    'G'   # <prefix> + this key stops the timer (default: G)
 set -g @grind-status-right '1'  # '0' to opt out of auto-injecting `#(grind status)`
@@ -173,4 +209,6 @@ grind is the focus-timer cousin of [tlock](https://github.com/retr0h/tlock) — 
 
 ## 📄 License
 
-[MIT](LICENSE) - John Dewey
+The [MIT][] License.
+
+[MIT]: LICENSE

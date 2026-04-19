@@ -6,6 +6,9 @@
 # then <prefix> I
 #
 # Configurable via the user's tmux.conf:
+#   set -g @grind-binary      '/custom/path/to/grind'  # override binary location
+#                                                      # (default: ~/.local/bin/grind,
+#                                                      # falls back to $PATH lookup)
 #   set -g @grind-launch-key  'g'   # <prefix> + this to start a timer
 #   set -g @grind-stop-key    'G'   # <prefix> + this to stop the timer
 #   set -g @grind-status-right '1'  # '1' to auto-prepend grind status to
@@ -15,17 +18,22 @@
 
 set -u
 
-if ! command -v grind >/dev/null 2>&1; then
-    tmux display-message "grind: binary not found on \$PATH — see https://github.com/retr0h/grind"
-    exit 0
-fi
-
 tmux_opt() {
     local name="$1" default="$2"
     local val
     val="$(tmux show-option -gqv "$name")"
     echo "${val:-$default}"
 }
+
+grind_bin="$(tmux_opt '@grind-binary' "$HOME/.local/bin/grind")"
+if [ ! -x "$grind_bin" ]; then
+    if command -v grind >/dev/null 2>&1; then
+        grind_bin="$(command -v grind)"
+    else
+        tmux display-message "grind: binary not found at $grind_bin or on \$PATH — see https://github.com/retr0h/grind#-install"
+        exit 0
+    fi
+fi
 
 launch_key="$(tmux_opt '@grind-launch-key' 'g')"
 stop_key="$(tmux_opt '@grind-stop-key' 'G')"
@@ -40,18 +48,18 @@ tmux set-option -g default-terminal "tmux-256color" 2>/dev/null || true
 tmux set-option -ga terminal-overrides ",*:RGB"
 
 # Prepend grind's status output to status-right unless the user opted out.
-# We check for '#(grind status)' and skip if already present.
+# We check for 'grind status' and skip if already present.
 if [ "$auto_status" = "1" ]; then
     current_sr="$(tmux show-option -gqv status-right)"
     if [[ "$current_sr" != *'grind status'* ]]; then
-        tmux set-option -g status-right "#(grind status) ${current_sr}"
+        tmux set-option -g status-right "#($grind_bin status) ${current_sr}"
     fi
 fi
 
 # Launch: prompt for a Go duration, then run grind in bar mode in the
 # background so the UI never takes over a pane.
 tmux bind-key "$launch_key" command-prompt -p "grind:" \
-    "run-shell -b 'grind --bar --timer %1'"
+    "run-shell -b '$grind_bin --bar --timer %1'"
 
 # Stop / dismiss: SIGTERMs the running grind process and clears state.
-tmux bind-key "$stop_key" run-shell 'grind stop'
+tmux bind-key "$stop_key" run-shell "$grind_bin stop"
