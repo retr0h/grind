@@ -10,17 +10,6 @@
 [![go reference](https://img.shields.io/badge/go-reference-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://pkg.go.dev/github.com/retr0h/grind)
 ![github commit activity](https://img.shields.io/github/commit-activity/m/retr0h/grind?style=for-the-badge)
 
-<h1 align="center">
-<pre>
-______________________________
-7     77  _  77  77     77    \
-|   __!|    _||  ||  _  ||  7  |
-|  !  7|  _ \ |  ||  7  ||  |  |
-|     ||  7  ||  ||  |  ||  !  |
-!_____!!__!__!!__!!__!__!!_____!
-</pre>
-</h1>
-
 <p align="center">☕ An 8-bit retro terminal timer.</p>
 
 <p align="center">

@@ -35,7 +35,11 @@ import (
 // Run starts the foreground (full-screen) timer UI. Blocks until the user
 // exits via one of the vim-style exit keys (q, Q, ESC, ZZ, :q<CR>,
 // Ctrl+C).
-func Run(duration time.Duration) error {
+//
+// When bell is true, a single BEL (\a) is emitted to the current TTY at
+// the moment the timer first expires — most terminals surface that as a
+// tab-activity highlight or system beep.
+func Run(duration time.Duration, bell bool) error {
 	tmr := newTimer(duration)
 
 	_ = writeState(tmr)
@@ -77,6 +81,7 @@ func Run(duration time.Duration) error {
 	var commandMode bool
 	var commandBuf []byte
 	var lastKey byte
+	var belled bool
 
 	draw(tmr, time.Now(), commandMode, string(commandBuf))
 	for {
@@ -133,6 +138,10 @@ func Run(duration time.Duration) error {
 			lastKey = key
 			draw(tmr, time.Now(), commandMode, string(commandBuf))
 		case now := <-frameTick.C:
+			if bell && !belled && tmr.expired(now) {
+				fmt.Print("\a")
+				belled = true
+			}
 			if now.Sub(lastStateWrite) >= time.Second {
 				_ = writeState(tmr)
 				lastStateWrite = now

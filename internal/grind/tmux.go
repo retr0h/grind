@@ -33,8 +33,6 @@ import (
 type statusPalette struct {
 	reset   string
 	bold    string
-	hotPink string
-	dimPink string // expired-blink dim half
 	dim     string // paused
 	drained string // empty cells
 	hexFG   func(string) string
@@ -43,8 +41,6 @@ type statusPalette struct {
 var tmuxPalette = statusPalette{
 	reset:   "#[default]",
 	bold:    "#[bold]",
-	hotPink: "#[fg=#ff6ec7]",
-	dimPink: "#[fg=#7a3a60]",
 	dim:     "#[fg=colour240]",
 	drained: "#[fg=colour237]",
 	hexFG:   func(hex string) string { return fmt.Sprintf("#[fg=%s]", hex) },
@@ -53,12 +49,20 @@ var tmuxPalette = statusPalette{
 var ansiPalette = statusPalette{
 	reset:   "\033[0m",
 	bold:    "\033[1m",
-	hotPink: "\033[38;2;255;110;199m",
-	dimPink: "\033[38;2;122;58;96m",
 	dim:     "\033[38;5;240m",
 	drained: "\033[38;5;237m",
 	hexFG:   hexToAnsi,
 }
+
+// Post-expiry strobe. tmux samples `grind status` once per `status-interval`
+// (default 1s), so any sub-second animation aliases. We pin the strobe to
+// a wall-clock 1s cycle: odd seconds render bright ▓ hot pink, even seconds
+// collapse to dim ░ pink — the bar appears to flash in and out at 0.5 Hz.
+// Runs forever so the user can't tune it out once the first minute passes.
+const (
+	expiryHotPink = "#ff6ec7"
+	expiryDimPink = "#7a3a60"
+)
 
 // barGradient assigns a color to each cell position along the bar. Cells
 // near the start are cool green (plenty of time); cells near the end are
@@ -86,6 +90,13 @@ func hexToAnsi(hex string) string {
 		return "\033[38;5;189m"
 	}
 	return fmt.Sprintf("\033[38;2;%d;%d;%dm", r, g, b)
+}
+
+// expiryStrobe returns true on the bright (on) half of the 1s strobe.
+// Derived from wall-clock seconds so every `grind status` invocation
+// (tmux calls it once per status-interval second) naturally flips state.
+func expiryStrobe(now int64) bool {
+	return (now/1000)%2 == 0
 }
 
 // EmitTmuxStatus prints one line of tmux `#[...]` markup for
@@ -141,7 +152,19 @@ func renderStatus(p statusPalette) string {
 	full := int(fractional)
 	partial := fractional - float64(full)
 
-	blinkBright := (now/700)%2 == 0
+	var (
+		expiredColor string
+		expiredChar  string
+	)
+	if expired {
+		if expiryStrobe(now) {
+			expiredColor = p.hexFG(expiryHotPink)
+			expiredChar = "\u2593" // on-beat: full bright block
+		} else {
+			expiredColor = p.hexFG(expiryDimPink)
+			expiredChar = "\u2591" // off-beat: bar "disappears"
+		}
+	}
 
 	var bar strings.Builder
 	for i := 0; i < barWidth; i++ {
@@ -157,11 +180,8 @@ func renderStatus(p statusPalette) string {
 
 		switch {
 		case expired:
-			if blinkBright {
-				color = p.hotPink
-			} else {
-				color = p.dimPink
-			}
+			color = expiredColor
+			char = expiredChar
 		case paused:
 			color = p.dim
 		case char == "\u2591":
@@ -176,11 +196,7 @@ func renderStatus(p statusPalette) string {
 	var timeColor, timeStr string
 	switch {
 	case expired:
-		if blinkBright {
-			timeColor = p.hotPink
-		} else {
-			timeColor = p.dimPink
-		}
+		timeColor = expiredColor
 		timeStr = "\u2191" + formatDuration(elapsedMs-s.DurationMs)
 	case paused:
 		timeColor = p.dim
