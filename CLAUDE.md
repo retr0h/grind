@@ -12,16 +12,18 @@ grind is an 8-bit retro terminal timer. A single duration is passed via `--timer
 grind/
 ├── main.go                       # 7-line entry point → cmd.Execute()
 ├── cmd/                          # cobra CLI tree
-│   ├── root.go                   # `grind` + --timer / --bar flags
-│   ├── status.go                 # `grind status`
-│   └── stop.go                   # `grind stop`
+│   ├── root.go                   # `grind` + --timer / --bar / --no-bell flags
+│   ├── status.go                 # `grind status` (+ --ansi for previews)
+│   ├── stop.go                   # `grind stop`
+│   └── ringbell.go               # hidden `grind ring-bell` diagnostic
 ├── internal/grind/               # all implementation
 │   ├── timer.go                  # timer type (elapsed/remaining/paused/expired)
 │   ├── palette.go                # maxheadroom colors + palette struct + random picker
 │   ├── state.go                  # ~/.grind/state.json persistence + Stop()
 │   ├── foreground.go             # Run() — full-screen UI, raw term, key dispatch
 │   ├── background.go             # RunBar() — headless, drives tmux status bar
-│   ├── tmux.go                   # EmitTmuxStatus() — gradient bar renderer
+│   ├── bell.go                   # RingBarBell() — writes BEL to tmux client/pane ttys
+│   ├── tmux.go                   # Emit{Tmux,Ansi}Status() — bar + expiry strobe
 │   ├── cup.go                    # Coffee cup pixel art (22×12) + renderCup
 │   ├── digits.go                 # 5×7 block glyphs (0–9, A–Z, `:`, `/`, space)
 │   ├── hud.go                    # Vim-style `:` command bar with blinking cursor
@@ -33,9 +35,11 @@ grind/
 
 Public API of `internal/grind`:
 
-- `Run(duration)` — foreground UI (blocks until user quits)
-- `RunBar(duration)` — headless tmux-bar driver (blocks until SIGTERM)
-- `EmitTmuxStatus()` — print one tmux status-right line and return
+- `Run(duration, bell)` — foreground UI (blocks until user quits)
+- `RunBar(duration, bell)` — headless tmux-bar driver (blocks until SIGTERM)
+- `EmitTmuxStatus()` — print one tmux `#[...]` status-right line and return
+- `EmitAnsiStatus()` — same bar as ANSI escapes (for direct-terminal previews)
+- `RingBarBell()` — fire a single BEL into every tmux client/pane tty
 - `Stop()` — SIGTERM the running instance, clear state
 
 Dependencies:
@@ -47,10 +51,12 @@ Dependencies:
 ## Key Technical Details
 
 - Uses raw terminal mode — all output needs `\r\n` not just `\n`
-- 10 FPS frame ticker drives glitch animation and expiry pulse
+- 10 FPS frame ticker drives glitch animation and the foreground cup's 700ms pulse
 - Countdown is calculated from `startedAt + pausedFor`, not a decrementing remaining
 - On expiry, `fillPct` is clamped to 1.0 (cup re-fills pink)
-- Alert pulse toggles the cup outline between hot pink `#ff6ec7` and dim `#7a3a60` every 700ms
+- Foreground cup pulses the outline hot pink `#ff6ec7` ↔ dim `#7a3a60` every 700ms
+- Bar mode strobes on a 1s wall-clock beat (not 700ms): tmux samples `#(grind status)` once per `status-interval`, so any sub-second period aliases. Odd seconds render bright ▓ hot pink; even seconds collapse to dim ░ pink. Runs indefinitely
+- On expiry transition, `Run` writes `"\a"` to its pane's stdout; `RunBar` (no TTY) shells out to tmux and writes BEL to every client tty and every pane tty — that fires both the outer terminal's tab flash and tmux's `monitor-bell` `!` indicator. `--no-bell` suppresses both paths
 - Keys read via single persistent stdin goroutine
 - SIGWINCH triggers a redraw for terminal resize
 
