@@ -156,9 +156,11 @@ the start, yellow and orange in the middle, pink as you approach expiry.
 > Recording generated with [VHS](https://github.com/charmbracelet/vhs):
 > `vhs asset/tmux-bar.tape` (see `asset/cup.tape` for the full-screen UI).
 
-On expiry the bar flips to hot pink, blinks between bright/dim every 700ms,
-and the timer starts counting up. That's the only alert — no bell, no
-desktop notification. Dismiss with `<prefix> G`.
+On expiry the bar strobes — every wall-clock second it alternates between
+bright ▓ hot pink and dim ░ pink — and a single terminal `\a` fires so
+tmux's `monitor-bell` lights up the window tab `!` and the outer terminal
+emulator flashes its tab. Suppress the bell with `--no-bell`. The strobe
+runs indefinitely; dismiss with `<prefix> G`.
 
 When no timer is running, `grind status` prints nothing — tmux renders an
 empty slot.
