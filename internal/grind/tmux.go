@@ -26,17 +26,17 @@ import (
 	"time"
 )
 
-// Tmux bar constants.
+// Tmux status-right markup tokens. Tmux does not interpret raw ANSI
+// escape sequences inside `#(command)` output — it only recognizes its
+// own `#[fg=...]` / `#[bold]` directives. Emitting ANSI here would
+// render as literal escape text in the status bar.
 const (
-	ansiReset = "\033[0m"
-	ansiBold  = "\033[1m"
-
-	// Expiry blink colors
-	ansiHotPink = "\033[38;2;255;110;199m"
-	ansiDimPink = "\033[38;2;122;58;96m"
-
-	ansiDim     = "\033[38;5;240m" // paused
-	ansiDrained = "\033[38;5;237m" // empty cells
+	tmuxReset   = "#[default]"
+	tmuxBold    = "#[bold]"
+	tmuxHotPink = "#[fg=#ff6ec7]"
+	tmuxDimPink = "#[fg=#7a3a60]"
+	tmuxDim     = "#[fg=colour240]" // paused
+	tmuxDrained = "#[fg=colour237]" // empty cells
 )
 
 // barGradient assigns a color to each cell position along the bar. Cells
@@ -56,15 +56,8 @@ var barGradient = []string{
 
 var barWidth = len(barGradient)
 
-func hexToAnsi(hex string) string {
-	if len(hex) != 7 || hex[0] != '#' {
-		return "\033[38;5;189m"
-	}
-	var r, g, b int
-	if _, err := fmt.Sscanf(hex[1:], "%02x%02x%02x", &r, &g, &b); err != nil {
-		return "\033[38;5;189m"
-	}
-	return fmt.Sprintf("\033[38;2;%d;%d;%dm", r, g, b)
+func hexToTmux(hex string) string {
+	return fmt.Sprintf("#[fg=%s]", hex)
 }
 
 // EmitTmuxStatus prints one line for tmux `status-right`. When no timer
@@ -120,43 +113,43 @@ func EmitTmuxStatus() {
 		switch {
 		case expired:
 			if blinkBright {
-				color = ansiHotPink
+				color = tmuxHotPink
 			} else {
-				color = ansiDimPink
+				color = tmuxDimPink
 			}
 		case paused:
-			color = ansiDim
+			color = tmuxDim
 		case char == "\u2591":
-			color = ansiDrained
+			color = tmuxDrained
 		default:
-			color = hexToAnsi(barGradient[i])
+			color = hexToTmux(barGradient[i])
 		}
-		bar.WriteString(color + ansiBold + char)
+		bar.WriteString(color + tmuxBold + char)
 	}
-	bar.WriteString(ansiReset)
+	bar.WriteString(tmuxReset)
 
 	var timeColor, timeStr string
 	switch {
 	case expired:
 		if blinkBright {
-			timeColor = ansiHotPink
+			timeColor = tmuxHotPink
 		} else {
-			timeColor = ansiDimPink
+			timeColor = tmuxDimPink
 		}
 		timeStr = "\u2191" + formatDuration(elapsedMs-s.DurationMs)
 	case paused:
-		timeColor = ansiDim
+		timeColor = tmuxDim
 		timeStr = "\u23f8 " + formatDuration(s.DurationMs-elapsedMs)
 	default:
 		idx := full
 		if idx >= barWidth {
 			idx = barWidth - 1
 		}
-		timeColor = hexToAnsi(barGradient[idx])
+		timeColor = hexToTmux(barGradient[idx])
 		timeStr = formatDuration(s.DurationMs - elapsedMs)
 	}
 
-	fmt.Printf("%s  %s%s%s%s", bar.String(), timeColor, ansiBold, timeStr, ansiReset)
+	fmt.Printf("%s  %s%s%s%s", bar.String(), timeColor, tmuxBold, timeStr, tmuxReset)
 }
 
 func formatDuration(ms int64) string {
