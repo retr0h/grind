@@ -23,6 +23,10 @@ ______________________________
 
 <p align="center">☕ An 8-bit retro terminal timer.</p>
 
+<p align="center">
+  <a href="asset/cup.gif"><img src="asset/cup.gif" width="70%" alt="grind coffee cup draining"></a>
+</p>
+
 A pixel-art coffee cup that drains as time runs out. Turns hot pink and pulses on expiry. Neon Max Headroom palette, vim-style exits, tmux plugin included.
 
 ## ✨ Features
@@ -158,13 +162,10 @@ Enter. grind runs headless in the background. The status bar fills in left
 to right, painting cells with a **semantic color gradient**: cool green at
 the start, yellow and orange in the middle, pink as you approach expiry.
 
-```
-▓▓▓▒░░░░░░░░░░░░░░░░  04:18       (green, plenty of time)
-▓▓▓▓▓▓▓▓▓▓▒░░░░░░░░░  02:12       (yellow-orange, halfway)
-▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒░  00:15       (pink, almost done)
-▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ↑00:47      (expired — all pink, blinking)
-▓▓▓▓▓▓░░░░░░░░░░░░░░  ⏸ 18:42     (paused — dim)
-```
+![grind tmux status bar](asset/tmux-bar.gif)
+
+> Recording generated with [VHS](https://github.com/charmbracelet/vhs):
+> `vhs asset/tmux-bar.tape` (see `asset/cup.tape` for the full-screen UI).
 
 On expiry the bar flips to hot pink, blinks between bright/dim every 700ms,
 and the timer starts counting up. That's the only alert — no bell, no

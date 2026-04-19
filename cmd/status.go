@@ -26,13 +26,30 @@ import (
 	"github.com/retr0h/grind/internal/grind"
 )
 
+var ansiStatusFlag bool
+
 var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Emit a single progress-bar line for tmux status-right",
 	Long: `Read the current timer state from ~/.grind/state.json and emit a single
 line suitable for tmux 'status-right' or 'status-left'. Prints nothing if
-no timer is running.`,
+no timer is running.
+
+With --ansi, print raw ANSI escape sequences instead of tmux markup. Use
+this for direct-to-terminal previews (e.g. VHS recordings); tmux itself
+cannot interpret ANSI inside #(...) output and should stick to the default.`,
 	Run: func(_ *cobra.Command, _ []string) {
+		if ansiStatusFlag {
+			grind.EmitAnsiStatus()
+			return
+		}
 		grind.EmitTmuxStatus()
 	},
+}
+
+func init() {
+	statusCmd.Flags().BoolVar(
+		&ansiStatusFlag, "ansi", false,
+		"Emit ANSI escape sequences instead of tmux #[...] markup (for preview recordings)",
+	)
 }
