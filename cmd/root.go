@@ -32,8 +32,9 @@ import (
 )
 
 var (
-	timerFlag string
-	barFlag   bool
+	timerFlag  string
+	barFlag    bool
+	noBellFlag bool
 )
 
 var rootCmd = &cobra.Command{
@@ -50,10 +51,11 @@ and pulses until you acknowledge it.`,
 		if duration <= 0 {
 			return fmt.Errorf("--timer must be positive")
 		}
+		bell := !noBellFlag
 		if barFlag {
-			return grind.RunBar(duration)
+			return grind.RunBar(duration, bell)
 		}
-		return grind.Run(duration)
+		return grind.Run(duration, bell)
 	},
 }
 
@@ -73,6 +75,10 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(
 		&barFlag, "bar", false,
 		"Bar-only mode: no UI, just drive the tmux status bar via ~/.grind/state.json",
+	)
+	rootCmd.PersistentFlags().BoolVar(
+		&noBellFlag, "no-bell", false,
+		"Suppress the single terminal bell (\\a) fired when the timer expires",
 	)
 	rootCmd.AddCommand(statusCmd, stopCmd)
 }

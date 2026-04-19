@@ -18,47 +18,23 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-package grind
+package cmd
 
 import (
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
+	"github.com/spf13/cobra"
+
+	"github.com/retr0h/grind/internal/grind"
 )
 
-// RunBar starts a headless "bar-only" timer. No terminal rendering, no key
-// handling — just a ticker that keeps `~/.grind/state.json` fresh so the
-// tmux status bar (driven by `grind status`) can pick up progress. Exits
-// cleanly on SIGTERM/SIGINT (e.g. from `grind stop` or <prefix> G).
-//
-// When bell is true, the first tick that observes an expired timer fires
-// a single BEL into the launching tmux pane so the window/tab lights up.
-func RunBar(duration time.Duration, bell bool) error {
-	tmr := newTimer(duration)
+var ringBellCmd = &cobra.Command{
+	Use:    "ring-bell",
+	Short:  "Fire the bar-mode expiry bell immediately (diagnostic)",
+	Hidden: true,
+	Run: func(_ *cobra.Command, _ []string) {
+		grind.RingBarBell()
+	},
+}
 
-	if err := writeState(tmr); err != nil {
-		return err
-	}
-	defer clearState()
-
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, syscall.SIGTERM, syscall.SIGINT)
-
-	tick := time.NewTicker(1 * time.Second)
-	defer tick.Stop()
-
-	belled := false
-	for {
-		select {
-		case <-sigCh:
-			return nil
-		case now := <-tick.C:
-			if bell && !belled && tmr.expired(now) {
-				RingBarBell()
-				belled = true
-			}
-			_ = writeState(tmr)
-		}
-	}
+func init() {
+	rootCmd.AddCommand(ringBellCmd)
 }
