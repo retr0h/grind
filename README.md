@@ -9,6 +9,7 @@
 ![macOS](https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white)
 [![go reference](https://img.shields.io/badge/go-reference-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://pkg.go.dev/github.com/retr0h/grind)
 ![github commit activity](https://img.shields.io/github/commit-activity/m/retr0h/grind?style=for-the-badge)
+[![hovnokod](https://raw.githubusercontent.com/tekk/hovnokod-badge/main/assets/badges/hovnokod-for-the-badge.svg)](https://github.com/tekk/hovnokod-badge)
 
 <p align="center">☕ An 8-bit retro terminal timer.</p>
 
