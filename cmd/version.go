@@ -69,10 +69,14 @@ func buildVersion(version, commit, date, builtBy, treeState string) goversion.In
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Display the version of grind",
-	Run: func(_ *cobra.Command, _ []string) {
+	RunE: func(_ *cobra.Command, _ []string) error {
 		v := buildVersion(version, commit, date, builtBy, treeState)
-		jsonOut, _ := v.JSONString()
+		jsonOut, err := v.JSONString()
+		if err != nil {
+			return fmt.Errorf("failed to render version JSON: %w", err)
+		}
 		fmt.Println(jsonOut)
+		return nil
 	},
 }
 
