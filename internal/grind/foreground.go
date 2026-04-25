@@ -58,18 +58,36 @@ func Run(duration time.Duration, bell bool) error {
 
 	winchCh := make(chan os.Signal, 1)
 	signal.Notify(winchCh, syscall.SIGWINCH)
+	defer signal.Stop(winchCh)
+
+	doneCh := make(chan struct{})
+	defer close(doneCh)
 
 	keyCh := make(chan byte, 4)
 	go func() {
 		buf := make([]byte, 1)
+		backoff := time.NewTimer(0)
+		if !backoff.Stop() {
+			<-backoff.C
+		}
+		defer backoff.Stop()
 		for {
 			n, err := os.Stdin.Read(buf)
 			if err != nil {
-				time.Sleep(10 * time.Millisecond)
-				continue
+				backoff.Reset(10 * time.Millisecond)
+				select {
+				case <-doneCh:
+					return
+				case <-backoff.C:
+					continue
+				}
 			}
 			if n > 0 {
-				keyCh <- buf[0]
+				select {
+				case keyCh <- buf[0]:
+				case <-doneCh:
+					return
+				}
 			}
 		}
 	}()

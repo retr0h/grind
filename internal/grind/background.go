@@ -44,6 +44,7 @@ func RunBar(duration time.Duration, bell bool) error {
 
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGTERM, syscall.SIGINT)
+	defer signal.Stop(sigCh)
 
 	tick := time.NewTicker(1 * time.Second)
 	defer tick.Stop()
