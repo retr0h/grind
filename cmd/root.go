@@ -24,11 +24,10 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/spf13/cobra"
 
-	"github.com/retr0h/grind/internal/grind"
+	"github.com/retr0h/grind/internal/cli"
 )
 
 var (
@@ -37,25 +36,17 @@ var (
 	noBellFlag bool
 )
 
+// rootCmd has no RunE — bare `grind` falls through to the themed
+// help, which auto-generates the subcommand list. Running the timer
+// is an explicit `grind start`.
 var rootCmd = &cobra.Command{
 	Use:   "grind",
 	Short: "An 8-bit retro terminal timer",
 	Long: `grind is a glanceable countdown with a pixel-art coffee cup that drains
 as time runs out. When the timer expires, the cup re-fills with hot pink
 and pulses until you acknowledge it.`,
-	RunE: func(_ *cobra.Command, _ []string) error {
-		duration, err := time.ParseDuration(timerFlag)
-		if err != nil {
-			return fmt.Errorf("invalid --timer: %w", err)
-		}
-		if duration <= 0 {
-			return fmt.Errorf("--timer must be positive")
-		}
-		bell := !noBellFlag
-		if barFlag {
-			return grind.RunBar(duration, bell)
-		}
-		return grind.Run(duration, bell)
+	Run: func(c *cobra.Command, _ []string) {
+		_ = c.Help()
 	},
 }
 
@@ -81,4 +72,19 @@ func init() {
 		"Suppress the single terminal bell (\\a) fired when the timer expires",
 	)
 	rootCmd.AddCommand(statusCmd, stopCmd)
+
+	// Wrap cobra's default help to print the themed banner above it.
+	// SetHelpFunc fires for `grind --help` and for the bare-command
+	// fallback alike, so the banner shows in both paths without
+	// duplicating itself.
+	defaultHelp := rootCmd.HelpFunc()
+	rootCmd.SetHelpFunc(func(c *cobra.Command, args []string) {
+		if c == rootCmd {
+			out := c.OutOrStdout()
+			_, _ = fmt.Fprintln(out)
+			_, _ = fmt.Fprint(out, cli.Banner(out))
+			_, _ = fmt.Fprintln(out)
+		}
+		defaultHelp(c, args)
+	})
 }
