@@ -1,10 +1,14 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with
+code in this repository.
 
 ## Project Overview
 
-grind is an 8-bit retro terminal timer. A single duration is passed via `--timer`, and the app renders a pixel-art coffee cup that drains as the clock runs out. On expiry the cup re-fills with hot pink and pulses until the user acknowledges it via a vim-style exit (`ESC`, `ZZ`, or `:q<CR>`).
+grind is an 8-bit retro terminal timer. A single duration is passed via
+`--timer`, and the app renders a pixel-art coffee cup that drains as the clock
+runs out. On expiry the cup re-fills with hot pink and pulses until the user
+acknowledges it via a vim-style exit (`ESC`, `ZZ`, or `:q<CR>`).
 
 ## Architecture
 
@@ -51,12 +55,21 @@ Dependencies:
 ## Key Technical Details
 
 - Uses raw terminal mode — all output needs `\r\n` not just `\n`
-- 10 FPS frame ticker drives glitch animation and the foreground cup's 700ms pulse
-- Countdown is calculated from `startedAt + pausedFor`, not a decrementing remaining
+- 10 FPS frame ticker drives glitch animation and the foreground cup's 700ms
+  pulse
+- Countdown is calculated from `startedAt + pausedFor`, not a decrementing
+  remaining
 - On expiry, `fillPct` is clamped to 1.0 (cup re-fills pink)
-- Foreground cup pulses the outline hot pink `#ff6ec7` ↔ dim `#7a3a60` every 700ms
-- Bar mode strobes on a 1s wall-clock beat (not 700ms): tmux samples `#(grind status)` once per `status-interval`, so any sub-second period aliases. Odd seconds render bright ▓ hot pink; even seconds collapse to dim ░ pink. Runs indefinitely
-- On expiry transition, `Run` writes `"\a"` to its pane's stdout; `RunBar` (no TTY) shells out to tmux and writes BEL to every client tty and every pane tty — that fires both the outer terminal's tab flash and tmux's `monitor-bell` `!` indicator. `--no-bell` suppresses both paths
+- Foreground cup pulses the outline hot pink `#ff6ec7` ↔ dim `#7a3a60` every
+  700ms
+- Bar mode strobes on a 1s wall-clock beat (not 700ms): tmux samples
+  `#(grind status)` once per `status-interval`, so any sub-second period
+  aliases. Odd seconds render bright ▓ hot pink; even seconds collapse to dim ░
+  pink. Runs indefinitely
+- On expiry transition, `Run` writes `"\a"` to its pane's stdout; `RunBar` (no
+  TTY) shells out to tmux and writes BEL to every client tty and every pane tty
+  — that fires both the outer terminal's tab flash and tmux's `monitor-bell` `!`
+  indicator. `--no-bell` suppresses both paths
 - Keys read via single persistent stdin goroutine
 - SIGWINCH triggers a redraw for terminal resize
 
@@ -98,11 +111,14 @@ Foreground / outline:
 
 ## Code Standards
 
-- Follow [Conventional Commits](https://www.conventionalcommits.org/) for commit messages
+- Follow [Conventional Commits](https://www.conventionalcommits.org/) for commit
+  messages
 - Multi-line function signatures
-- golangci-lint with: errcheck, errname, govet, prealloc, predeclared, revive, staticcheck
+- golangci-lint with: errcheck, errname, govet, prealloc, predeclared, revive,
+  staticcheck
 
 ## Roadmap
 
-- [x] `grind status` subcommand — single-line tmux `status-right` bar sharing state via `~/.grind/state.json`
+- [x] `grind status` subcommand — single-line tmux `status-right` bar sharing
+  state via `~/.grind/state.json`
 - [x] `--bar` (headless) mode + `grind stop` for tmux key-binding launches
