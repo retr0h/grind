@@ -17,7 +17,8 @@
   <a href="asset/cup.gif"><img src="asset/cup.gif" width="70%" alt="grind coffee cup draining"></a>
 </p>
 
-A pixel-art coffee cup that drains as time runs out. Turns hot pink and pulses on expiry. Neon Max Headroom palette, vim-style exits, tmux plugin included.
+A pixel-art coffee cup that drains as time runs out. Turns hot pink and pulses
+on expiry. Neon Max Headroom palette, vim-style exits, tmux plugin included.
 
 ## ✨ Features
 
@@ -35,7 +36,9 @@ A pixel-art coffee cup that drains as time runs out. Turns hot pink and pulses o
 curl -fsSL https://github.com/retr0h/grind/raw/main/install.sh | sh
 ```
 
-Installs to `~/.local/bin` (or `/usr/local/bin` as root) — SHA256 checksums verified. Override with `GRIND_INSTALL_DIR=/some/path` or pin a version with `GRIND_VERSION=1.1.1`.
+Installs to `~/.local/bin` (or `/usr/local/bin` as root) — SHA256 checksums
+verified. Override with `GRIND_INSTALL_DIR=/some/path` or pin a version with
+`GRIND_VERSION=1.1.1`.
 
 <details>
 <summary>Manual install</summary>
@@ -96,17 +99,17 @@ See **Tmux integration** below for the recommended key bindings.
 
 ### ⌨️ Controls
 
-| Key               | Action                                     |
-| ----------------- | ------------------------------------------ |
-| `SPACE`           | Pause / resume (while timer is running)    |
-| `:`               | Open vim-style command bar                 |
-| `:q<CR>` / `ZZ` / `ESC` | Quit                                 |
-| `Q` / `Ctrl+C`    | Quit (quick)                               |
+| Key                     | Action                                  |
+| ----------------------- | --------------------------------------- |
+| `SPACE`                 | Pause / resume (while timer is running) |
+| `:`                     | Open vim-style command bar              |
+| `:q<CR>` / `ZZ` / `ESC` | Quit                                    |
+| `Q` / `Ctrl+C`          | Quit (quick)                            |
 
 ### 📊 Tmux integration
 
-grind ships as a **tmux plugin**. One line in `~/.tmux.conf` sets up the
-key bindings, the status bar, and the truecolor overrides.
+grind ships as a **tmux plugin**. One line in `~/.tmux.conf` sets up the key
+bindings, the status bar, and the truecolor overrides.
 
 #### Install via [TPM](https://github.com/tmux-plugins/tpm) (recommended)
 
@@ -141,37 +144,40 @@ bind-key g command-prompt -p "grind:" "run-shell -b 'grind --bar --timer %1'"
 bind-key G run-shell 'grind stop'
 ```
 
-> **Note:** you still need the `grind` binary on `$PATH` — the tmux plugin
-> only wires up tmux. Install the binary via `go install github.com/retr0h/grind@latest`
-> or from the releases page.
+> **Note:** you still need the `grind` binary on `$PATH` — the tmux plugin only
+> wires up tmux. Install the binary via
+> `go install github.com/retr0h/grind@latest` or from the releases page.
 
 #### How it feels
 
-Hit `<prefix> g`, type `5m` (or `45s`, `1h30m`, any Go duration), press
-Enter. grind runs headless in the background. The status bar fills in left
-to right, painting cells with a **semantic color gradient**: cool green at
-the start, yellow and orange in the middle, pink as you approach expiry.
+Hit `<prefix> g`, type `5m` (or `45s`, `1h30m`, any Go duration), press Enter.
+grind runs headless in the background. The status bar fills in left to right,
+painting cells with a **semantic color gradient**: cool green at the start,
+yellow and orange in the middle, pink as you approach expiry.
 
 ![grind tmux status bar](asset/tmux-bar.gif)
 
 > Recording generated with [VHS](https://github.com/charmbracelet/vhs):
 > `vhs asset/tmux-bar.tape` (see `asset/cup.tape` for the full-screen UI).
 
-On expiry the bar strobes — every wall-clock second it alternates between
-bright ▓ hot pink and dim ░ pink — and a single terminal `\a` fires so
-tmux's `monitor-bell` lights up the window tab `!` and the outer terminal
-emulator flashes its tab. Suppress the bell with `--no-bell`. The strobe
-runs indefinitely; dismiss with `<prefix> G`.
+On expiry the bar strobes — every wall-clock second it alternates between bright
+▓ hot pink and dim ░ pink — and a single terminal `\a` fires so tmux's
+`monitor-bell` lights up the window tab `!` and the outer terminal emulator
+flashes its tab. Suppress the bell with `--no-bell`. The strobe runs
+indefinitely; dismiss with `<prefix> G`.
 
-When no timer is running, `grind status` prints nothing — tmux renders an
-empty slot.
+When no timer is running, `grind status` prints nothing — tmux renders an empty
+slot.
 
 ## ⚙️ How It Works
 
-1. 🎨 **Pick a duration** — `grind --timer 25m` (any Go `time.ParseDuration` string)
-2. 🎲 **Random color** — the cup is tinted orange / cyan / magenta / green / yellow at random
+1. 🎨 **Pick a duration** — `grind --timer 25m` (any Go `time.ParseDuration`
+   string)
+2. 🎲 **Random color** — the cup is tinted orange / cyan / magenta / green /
+   yellow at random
 3. ⏳ **Watch it drain** — cup empties top-down as the clock counts down
-4. 🔔 **Expiry alert** — when the clock hits 0:00 the cup re-fills with hot pink and starts **pulsing**; the digits flip pink and count **up**
+4. 🔔 **Expiry alert** — when the clock hits 0:00 the cup re-fills with hot pink
+   and starts **pulsing**; the digits flip pink and count **up**
 5. ⌨️ **Acknowledge** — press `ESC`, `ZZ`, or `:q<CR>` to quit
 
 ## 📋 Requirements
@@ -181,15 +187,17 @@ empty slot.
 
 ## 💡 Inspiration
 
-grind is the focus-timer cousin of [tlock](https://github.com/retr0h/tlock) — same 3×2 grid system, same glitch-style unicode block language, same retro CRT aesthetic. Different tool, same house style.
+grind is the focus-timer cousin of [tlock](https://github.com/retr0h/tlock) —
+same 3×2 grid system, same glitch-style unicode block language, same retro CRT
+aesthetic. Different tool, same house style.
 
 ## 🔀 Alternatives
 
-| Tool                                                            | Description                               |
-| --------------------------------------------------------------- | ----------------------------------------- |
-| [timer](https://github.com/caarlos0/timer)                      | Plain Go terminal countdown               |
-| [termdown](https://github.com/trehn/termdown)                   | Python-based big-digit countdown          |
-| [tty-clock](https://github.com/xorg62/tty-clock)                | Classic ncurses digital clock             |
+| Tool                                             | Description                      |
+| ------------------------------------------------ | -------------------------------- |
+| [timer](https://github.com/caarlos0/timer)       | Plain Go terminal countdown      |
+| [termdown](https://github.com/trehn/termdown)    | Python-based big-digit countdown |
+| [tty-clock](https://github.com/xorg62/tty-clock) | Classic ncurses digital clock    |
 
 ## 🗺️ Roadmap
 
@@ -197,11 +205,12 @@ grind is the focus-timer cousin of [tlock](https://github.com/retr0h/tlock) — 
 - [x] 🎲 Random Max Headroom color per launch
 - [x] 🔔 Hot-pink expiry pulse + count-up
 - [x] ⌨️ Vim-style exits (`ESC`/`ZZ`/`:q`)
-- [x] 📊 `grind status` — single-line tmux `status-right` bar matching the Claude statusline palette
+- [x] 📊 `grind status` — single-line tmux `status-right` bar matching the Claude
+  statusline palette
 - [x] ⏱️ Bar-only mode (`grind --bar`) + `grind stop` for tmux key bindings
 
 ## 📄 License
 
-The [MIT][] License.
+The [MIT] License.
 
-[MIT]: LICENSE
+[mit]: LICENSE
