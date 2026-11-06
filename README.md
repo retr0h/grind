@@ -209,6 +209,12 @@ aesthetic. Different tool, same house style.
   statusline palette
 - [x] ⏱️ Bar-only mode (`grind --bar`) + `grind stop` for tmux key bindings
 
+## 📖 Documentation
+
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for setup, testing and
+architecture, and [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for the pull
+request workflow.
+
 ## 📄 License
 
 The [MIT] License.
