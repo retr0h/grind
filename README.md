@@ -183,7 +183,7 @@ slot.
 ## 📋 Requirements
 
 - 🍎 macOS (terminal with ANSI + unicode block character support)
-- 🐹 Go 1.21+ (to build from source)
+- 🐹 Go 1.27.3+ (to build from source)
 
 ## 💡 Inspiration
 

@@ -56,7 +56,7 @@ docs: update README with keybinding table
 ### Prerequisites
 
 - macOS (terminal with ANSI + unicode block support)
-- Go 1.21+
+- Go 1.27.3+
 
 ### Building
 
